@@ -1,0 +1,78 @@
+---
+title: "Compare regions using choropleth with a manual colour scale"
+output:
+  xaringan::moon_reader:
+    css: ["style.css", "default"]
+    lib_dir: libs
+    df_print: paged
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+      ratio: 16:9
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r child = "setup.Rmd"}
+```
+
+
+
+
+class: center, middle, dk-section-title
+background-image:url("images/pexels-photo-3737703.jpeg")
+
+# Compare regions using choropleth with a manual colour scale
+
+
+---
+
+# Comparing regions with choropleth
+
+.pull-left[
+Choropleth are often the <u>**simplest**</u> choice for comparing a categorical variable across multiple regions.
+
+They're therefore very popular in visualising election data.
+]
+
+.pull-right[
+```{r, eval=TRUE, echo=FALSE, fig.dim=c(5, 6.5)}
+uk_authority_shp <- read_sf(here("slides", "getting-map-data-into-r", "data", "local-authority-shapefiles"))
+
+referendum_votes <- read_csv("https://data.london.gov.uk/download/eu-referendum-results/52dccf67-a2ab-4f43-a6ba-894aaeef169e/EU-referendum-result-data.csv") 
+referendum_votes <- clean_names(referendum_votes)
+
+referendum_votes <- referendum_votes %>%
+  select(area_code, area, electorate, votes_cast, valid_votes, pct_remain, pct_leave)
+
+
+referendum_votes <- referendum_votes %>%
+  mutate(result = case_when(pct_remain > pct_leave ~ "Remain",
+                            pct_remain < pct_leave ~ "Leave"))
+
+brexit_by_authority <- uk_authority_shp %>%
+  dplyr::left_join(referendum_votes,
+                    by = c("lad17cd" = "area_code")) %>%
+  select(area, electorate, result, votes_cast, valid_votes, pct_remain, pct_leave, everything())
+
+
+gg_brexit_by_authority <- brexit_by_authority %>%
+  ggplot() +
+  geom_sf(aes(fill = result),
+          colour = "white",
+          lwd = 0.1) +
+  scale_fill_manual(values = c("Leave" = "#005ea7", "Remain" = "#ffb632")) +
+  theme_void(base_size = 16) +
+  labs(title = "Constituencies that voted <span style='color:#005ea7'>**Leave**</span> and <span style='color:#ffb632'>**Remain**</span> in the 2016 Brexit Referendum") +
+  theme(plot.title = element_textbox_simple(minwidth = unit(5, "in"),
+                                            maxwidth = unit(8, "in"))) +
+  guides(fill = guide_none())
+
+gg_brexit_by_authority %>% 
+  ggsave(here("slides", "getting-map-data-into-r", "images", "gg_brexit_by_authority.png"),
+         .)
+
+gg_brexit_by_authority
+```
+]
