@@ -4,7 +4,6 @@ library("janitor")
 library("tidygeocoder")
 library("sf")
 library("rnaturalearthdata")
-library("ggrepel")
 
 ## ==== data processing
 
@@ -15,9 +14,6 @@ uk_addresses <- read_excel("data/street-addresses.xlsx",
 uk_addresses <- uk_addresses %>% 
   mutate(across(business_name:country, ~str_replace_na(., ""))) %>% 
   mutate(full_street_address = paste(business_name, street, sep = ", "))
-
-uk_addresses %>% 
-  write_csv("delete-me.csv")
 
 uk_addresses <- uk_addresses %>% 
   geocode(street = full_street_address,
@@ -42,37 +38,6 @@ ggplot() +
           aes(colour = city)) +
   theme_void() +
   guides(colour = guide_legend(override.aes = list(size = 3)))
-
-
-uk_addresses_coords <- uk_addresses_sf %>% 
-  st_coordinates() %>% 
-  as_tibble()
-
-
-uk_addresses_coords <- uk_addresses_sf %>% 
-  st_drop_geometry() %>% 
-  bind_cols(uk_addresses_coords) %>% 
-  arrange(Y)
-
-ggplot() +
-  geom_sf(data = uk_sf) +
-  geom_sf(data = uk_addresses_sf) +
-  geom_label_repel(data = uk_addresses_coords,
-                   aes(X, Y, label = location_name),
-                   nudge_x = 2000000)
-
-
-ggplot() +
-  geom_sf(data = uk_sf) +
-  geom_sf(data = uk_addresses_sf) +
-  geom_label_repel(data = uk_addresses_coords,
-                   aes(X, Y, label = location_name),
-                   nudge_x = c(5, -5, 5, -5, 5, -5), 
-                   min.segment.length = 0) +
-  theme_void()
-
-
-
 
 
 

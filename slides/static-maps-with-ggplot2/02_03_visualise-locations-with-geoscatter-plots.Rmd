@@ -31,23 +31,27 @@ library("ggspatial")
 library("leaflet")
 options(htmltools.preserve.raw = FALSE)
 
-uk_addresses <- read_excel(here("slides", "static-maps-with-ggplot2", "data", "street-addresses.xlsx"),
-                           sheet = "UK Addresses") %>% 
-  clean_names()
-
-uk_addresses <- uk_addresses %>% 
-  mutate(across(business_name:country, ~str_replace_na(., ""))) %>% 
-  mutate(full_street_address = paste(business_name, street, sep = ", "))
-
-uk_addresses <- uk_addresses %>% 
-  geocode(street = full_street_address,
-          city = city,
-          postalcode = post_code,
-          country = country,
-          method = "iq")
-
-uk_addresses_sf <- uk_addresses %>% 
-  st_as_sf(coords = c("long", "lat"), crs = 4326)
+# uk_addresses <- read_excel(here("slides", "static-maps-with-ggplot2", "data", "street-addresses.xlsx"),
+#                            sheet = "UK Addresses") %>% 
+#   clean_names()
+# 
+# uk_addresses <- uk_addresses %>% 
+#   mutate(across(business_name:country, ~str_replace_na(., ""))) %>% 
+#   mutate(full_street_address = paste(business_name, street, sep = ", "))
+# 
+# uk_addresses <- uk_addresses %>% 
+#   geocode(street = full_street_address,
+#           city = city,
+#           postalcode = post_code,
+#           country = country,
+#           method = "iq")
+# 
+# uk_addresses_sf <- uk_addresses %>% 
+#   st_as_sf(coords = c("long", "lat"), crs = 4326)
+# 
+# uk_addresses_sf %>% 
+#   saveRDS(here("slides", "static-maps-with-ggplot2", "data", "street-addresses.rds"))
+uk_addresses_sf <- readRDS(here("slides", "static-maps-with-ggplot2", "data", "street-addresses.rds"))
 
 uk_sf <- countries50 %>% 
   st_as_sf() %>% 

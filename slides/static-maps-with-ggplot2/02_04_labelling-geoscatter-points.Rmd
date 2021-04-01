@@ -16,3 +16,149 @@ editor_options:
 
 ```{r child = "setup.Rmd"}
 ```
+
+```{r, include=FALSE, eval=TRUE}
+library("tidyverse")
+library("sf")
+library("rnaturalearthdata")
+library("maps")
+library("here")
+library("ggspatial")
+library("janitor")
+library("readxl")
+library("tidygeocoder")
+library("ggspatial")
+library("leaflet")
+library("ggrepel")
+options(htmltools.preserve.raw = FALSE)
+
+# uk_addresses <- read_excel(here("slides", "static-maps-with-ggplot2", "data", "street-addresses.xlsx"),
+#                            sheet = "UK Addresses") %>% 
+#   clean_names()
+# 
+# uk_addresses <- uk_addresses %>% 
+#   mutate(across(business_name:country, ~str_replace_na(., ""))) %>% 
+#   mutate(full_street_address = paste(business_name, street, sep = ", "))
+# 
+# uk_addresses <- uk_addresses %>% 
+#   geocode(street = full_street_address,
+#           city = city,
+#           postalcode = post_code,
+#           country = country,
+#           method = "iq")
+# 
+# uk_addresses_sf <- uk_addresses %>% 
+#   st_as_sf(coords = c("long", "lat"), crs = 4326)
+# 
+# uk_addresses_sf %>% 
+#   saveRDS(here("slides", "static-maps-with-ggplot2", "data", "street-addresses.rds"))
+uk_addresses_sf <- readRDS(here("slides", "static-maps-with-ggplot2", "data", "street-addresses.rds"))
+
+uk_sf <- countries50 %>% 
+  st_as_sf() %>% 
+  filter(name == "United Kingdom")
+```
+
+class: center, middle, dk-section-title
+background-image:url("images/pexels-photo-1111313.jpeg")
+background-size: cover
+
+# Labelling geoscatter plots
+
+---
+
+### If only we weren't working with maps...
+
+.pull-left[
+
+The `{ggrepel}` package completely solves the problem of creating non-overlapping text labels in `{ggplot2}`.
+
+Except it doesn't work with `{sf}` objects... [yet](https://github.com/slowkow/ggrepel/issues/111).
+]
+
+.pull-right[
+```{r, eval=TRUE, echo=FALSE, dpi=150, out.width="450px"}
+starwars %>% 
+  slice_min(height, n = 10) %>% 
+  ggplot(aes(x = mass,
+             y = height)) +
+  geom_point() +
+  geom_label_repel(aes(label = name), 
+                   min.segment.length = 0.2,
+                   nudge_x = 3,
+                   nudge_y = 3,
+                   size = 6) +
+  labs(title = "Top 10 shortest beings in Star Wars",
+       subtitle = "Source: dplyr::starwars") +
+  theme_gray(base_size = 16)
+```
+]
+
+---
+
+### Converting {sf} to data.frame for {ggrepel} magic
+
+Thankfully - there's a two step trick to get round this:
+
+.pull-left[
+
+1. Extract coordinates from sf objects with st_coordinates()
+
+1. Supply these coordinates to the `{ggrepel}` functions  `geom_label_repel()` or `geom_text_repel()`.
+]
+
+.pull-right[
+<center><img src='images/ggrepel-allison_horst.jpg'/></center>
+]
+
+---
+
+class: my-turn
+
+## My Turn
+
+.pull-left[
+We had just created this chart in the previous video.
+
+We're going to replace the legend with labels using `geom_label_repel()`.
+]
+
+.pull-right[
+```{r, eval=TRUE, echo=FALSE, out.width='400px', dpi=300}
+gg_shapefiles <- ggplot() +
+  geom_sf(data = uk_sf) +
+  geom_sf(data = uk_addresses_sf,
+          aes(colour = city),
+          size = 1.5) +
+  guides(colour = guide_legend(override.aes = list(size = 3))) +
+  theme_void(base_size = 20)
+gg_shapefiles
+```
+]
+
+---
+
+class: center, middle, dk-section-title
+background-image:url("https://images.pexels.com/photos/1749900/pexels-photo-1749900.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260")
+background-size: cover
+
+---
+
+class: inverse
+
+## Your turn
+
+1. Recreate (or load the script) the geoscatter plot you made in the previous video:
+
+  - Filter out the top 5 largest cities in a country of interest from `maps::world.cities`
+
+  - Convert the city locations into an `sf` object
+
+  - Visualise these locations as a scatter plot with appropriate shapes from `countries50`
+  
+1. Use `geom_label_repel()` to label the cities
+
+
+
+
+
