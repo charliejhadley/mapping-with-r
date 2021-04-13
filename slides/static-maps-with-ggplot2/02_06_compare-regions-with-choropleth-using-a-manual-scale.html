@@ -34,26 +34,72 @@ layout: true
 
 
 
-
 class: center, middle, dk-section-title
 background-image:url("images/pexels-photo-3737703.jpeg")
+background-size: cover
 
 # Compare regions using choropleth with a manual colour scale
-
 
 ---
 
 # Comparing regions with choropleth
 
 .pull-left[
-Choropleth are often the &lt;u&gt;**simplest**&lt;/u&gt; choice for comparing a categorical variable across multiple regions.
+Choropleth are often the &lt;u&gt;**simplest**&lt;/u&gt; choice for comparing a categorical variable across geographic regions.
 
-They're therefore very popular in visualising election data.
+They're very popular for visualising election results.
 ]
 
 .pull-right[
-![](02_06_compare-regions-with-choropleth-using-a-manual-scale_files/figure-html/unnamed-chunk-2-1.png)&lt;!-- --&gt;
+
+
+&lt;img src='images/gg_brexit_by_authority.png' width='450px'/&gt;
+
 ]
+---
+
+class: my-turn
+
+# My turn
+
+.pull-left[
+1. Use the data in `worked-exercises/choropleth_manual-scales` to create a choropleth of 2016's Brexit referendum results.
+
+1. Use `scale_colour_manual()` to set our own colours.
+]
+
+.pull-right[
+&lt;img src='images/gg_brexit_by_authority.png' width='450px'/&gt;
+]
+
+---
+
+class: inverse
+
+# Your turn
+
+Use `usa-2016-pres-election.R` script to create a choropleth of the 2016 US Presidential elections.
+
+.pull-left[
+1. Join `usa_sf` and `pres_results`
+
+1. Create a choropleth from the combined datasets
+
+1. Use the `party_colours` to manually set the choropleth colours.
+]
+
+
+
+
+.pull-right[
+&lt;img src='images/gg_pres_election_2016.png' width='450px'/&gt;
+]
+
+
+
+
+
+
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>

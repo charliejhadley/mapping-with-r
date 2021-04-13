@@ -1,0 +1,125 @@
+---
+title: "Compare population distributions with dot density maps"
+output:
+  xaringan::moon_reader:
+    css: ["style.css", "default"]
+    lib_dir: libs
+    df_print: paged
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+      ratio: 16:9
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r child = "setup.Rmd"}
+```
+
+```{r, eval=TRUE, include=FALSE}
+library("tidyverse")
+library("sf")
+library("here")
+library("janitor")
+library("gapminder")
+library("rnaturalearthdata")
+library("countrycode")
+library("viridis")
+library("scales")
+library("colorspace")
+library("dichromat")
+library("future")
+```
+
+class: center, middle, dk-section-title
+background-image:url("images/pexels-photo-6985119.jpeg")
+background-size: cover
+
+# Compare population distributions with dot density maps
+
+---
+
+```{r, echo=FALSE, eval=TRUE}
+## ==== load data ====
+
+age_finished_education <- read_csv(here("data", "age-when-completed-education.csv"))
+
+london_sf <- read_sf(here("data", "london_boroughs"))
+
+london_education_sf <- london_sf %>%
+  left_join(age_finished_education,
+            by = c("lad11nm" = "area")
+  )
+```
+
+```{r, eval=TRUE, echo=FALSE}
+## ==== sf_dot_density ====
+plan(multiprocess)
+sf_dot_density <-
+  function(x,
+           group_var,
+           scale = 100) {
+    group_var <- enquo(group_var)
+    
+    group_var_values <- x %>%
+      pull(!!group_var) %>%
+      unique()
+    
+    st_dots_list <- map(group_var_values, ~ future(
+      {
+        grouped_x <- x %>%
+          select(!!group_var, value) %>%
+          filter(!!group_var == .x,
+                 !is.na(value)) %>%
+          mutate(
+            value = round(value / scale),
+            value > 0
+          )
+        
+        sampled_x <- suppressMessages(st_sample(grouped_x,
+                                                size = grouped_x$value
+        ))
+        
+        sampled_x %>%
+          st_sf() %>%
+          mutate(!!group_var := .x)
+      },
+      seed = TRUE
+    ))
+    
+    map(st_dots_list, ~ value(.x)) %>%
+      bind_rows()
+  }
+```
+
+
+```{r}
+## ==== dot density map ====
+
+dots_finished_edu <- london_education_sf %>%
+  filter(!age_group == "Still in education") %>%
+  sf_dot_density(age_group, scale = 25)
+
+```
+
+```{r, eval=FALSE, echo=FALSE}
+gg_london_edu_dot_density <- ggplot() +
+  geom_sf(data = dots_finished_edu,
+          aes(colour = age_group),
+          size = 0.001) +
+  geom_sf(data = london_sf,
+          alpha = 0) +
+  scale_colour_brewer(palette = "Set3", name = "Age when finished education") +
+  # scale_colour_viridis_d() +
+  labs(title = "When do Londoners leave formal education?\n(Source: ONS Population Survey, 2018)",
+       subtitle = "One dot = 25 people") +
+  guides(colour = guide_legend(override.aes = list(size=3))) +
+  theme_void(base_size = 26)
+  
+ggsave(here(here("slides", "static-maps-with-ggplot2", "images", "gg_london_edu_dot_density.png")),
+       gg_london_edu_dot_density,
+       width = 10 * 1.5,
+       height = 7 * 1.5)
+```
+
