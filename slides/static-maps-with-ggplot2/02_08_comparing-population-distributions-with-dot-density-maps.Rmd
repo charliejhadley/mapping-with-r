@@ -33,12 +33,10 @@ library("future")
 ```
 
 class: center, middle, dk-section-title
-background-image:url("images/pexels-photo-6985119.jpeg")
+background-image:url("images/pexels-photo-1193742.jpeg")
 background-size: cover
 
 # Compare population distributions with dot density maps
-
----
 
 ```{r, echo=FALSE, eval=TRUE}
 ## ==== load data ====
@@ -51,6 +49,31 @@ london_education_sf <- london_sf %>%
   left_join(age_finished_education,
             by = c("lad11nm" = "area")
   )
+```
+
+```{r, eval=FALSE, echo=FALSE}
+gg_london_edu_faceted <- ggplot() +
+  geom_sf(data = london_education_sf,
+          aes(fill = value,
+              colour = "No data"),
+          size = 0.25) +
+  scale_fill_viridis_c(name = "",
+                       labels = scales::percent_format(scale = 1)) +
+  scale_colour_manual(values = "white") +
+  facet_wrap(~ age_group) +
+  guides(colour = guide_legend(title = "",
+                               override.aes = list(
+                                 fill = "gray50",
+                                 colour = "white")),
+         fill = guide_colorbar(barwidth = 10)) +
+  theme_void() +
+  theme(strip.background = element_rect(fill = "grey85"),
+        legend.position = "bottom", legend.direction = "horizontal") +
+  labs(title = "When do Londoners leave formal education?")
+ggsave(here("slides", "static-maps-with-ggplot2", "images", "gg_london_edu_faceted.png"),
+       gg_london_edu_faceted,
+       width = 5,
+       height = 3)
 ```
 
 ```{r, eval=TRUE, echo=FALSE}
@@ -108,13 +131,26 @@ gg_london_edu_dot_density <- ggplot() +
   geom_sf(data = dots_finished_edu,
           aes(colour = age_group),
           size = 0.001) +
-  geom_sf(data = london_sf,
-          alpha = 0) +
-  scale_colour_brewer(palette = "Set3", name = "Age when finished education") +
+  geom_sf(
+    data = london_sf,
+    aes(fill = "No data",
+        alpha = ifelse(lad11nm == "City of London", 1, 0)),
+  ) +
+  scale_colour_brewer(palette = "Set3", name = "One dot = 25 people") +
+  scale_fill_manual(values = c("City of London" = "grey50", "white")) +
   # scale_colour_viridis_d() +
-  labs(title = "When do Londoners leave formal education?\n(Source: ONS Population Survey, 2018)",
-       subtitle = "One dot = 25 people") +
-  guides(colour = guide_legend(override.aes = list(size=3))) +
+  labs(title = "When do Londoners leave formal education?\n(Source: ONS Population Survey, 2018)") +
+  guides(
+    colour = guide_legend(override.aes = list(size = 5)),
+    fill = guide_legend(
+      title = "",
+      override.aes = list(
+        fill = "gray50",
+        colour = "white"
+      )
+    ),
+    alpha = guide_none()
+  ) +
   theme_void(base_size = 26)
   
 ggsave(here(here("slides", "static-maps-with-ggplot2", "images", "gg_london_edu_dot_density.png")),
@@ -122,4 +158,62 @@ ggsave(here(here("slides", "static-maps-with-ggplot2", "images", "gg_london_edu_
        width = 10 * 1.5,
        height = 7 * 1.5)
 ```
+
+---
+
+## Choropleth only work so well...
+
+.pull-left[
+- Choropleth can only reliably communicate one variable at a time.
+
+- Small multiples improve this - but can be difficult to read.
+
+- Choropleth **can't** communicate how many people live in each region - i.e. population densities.
+]
+
+.pull-right[
+<img src='images/gg_london_edu_faceted.png'/>
+]
+
+---
+
+<center><img src='images/gg_london_edu_dot_density.png' width='900px'/></center>
+
+---
+
+## Dot density criticisms
+
+.pull-left[
+- Dots (people) are **randomly** distributed within each region.
+
+- Densities are skewed by large differences in region area.
+
+- It takes time to generate both the data for the chart and to draw the chart.
+]
+
+.pull-right[
+<center><img src='images/gg_london_edu_dot_density.png' width='900px'/></center>
+]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

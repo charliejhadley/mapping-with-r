@@ -258,40 +258,48 @@ ggsave(here("slides", "static-maps-with-ggplot2", "images", "gg_left_edu_at_16.p
 
 ---
 
-> ... why is this called population-density-maps?
+class: inverse
 
-```{r, eval=FALSE, echo=FALSE}
-gg_london_edu_faceted <- ggplot() +
-  geom_sf(data = london_education_sf,
-          aes(fill = value,
-              colour = "No data"),
-          size = 0.25) +
-  scale_fill_viridis_c(name = "",
-                       labels = scales::percent_format(scale = 1)) +
-  scale_colour_manual(values = "white") +
-  facet_wrap(~ age_group) +
-  guides(colour = guide_legend(title = "",
-                               override.aes = list(
-                                 fill = "gray50",
-                                 colour = "white")),
-         fill = guide_colorbar(barwidth = 10)) +
-  theme_void() +
-  theme(strip.background = element_rect(fill = "grey85"),
-        legend.position = "bottom", legend.direction = "horizontal") +
-  labs(title = "When do Londoners leave formal education?")
-ggsave(here("slides", "static-maps-with-ggplot2", "images", "gg_london_edu_faceted.png"),
-       gg_london_edu_faceted,
-       width = 5,
-       height = 3)
-```
+# Your turn
+
+Use `worked-examples/gapminder-choropleth` to create this choropleth of life expectancy from the {gapminder} package.
 
 .pull-left[
-<img src='images/gg_london_edu_faceted.png'/>
+1. Join `gapminder_2007` and `countries_sf`
+
+1. Create a choropleth using the viridis colour palette
+
+1. Add a "No data" legend item
+
+1. **Advanced:** Use the {countrycode} package to improve the visualisation.
 ]
 
 .pull-right[
-<img src='images/gg_london_edu_dot_density.png'/>
+```{r, eval=FALSE, echo=FALSE}
+gg_gapminder_viridis <- ggplot() +
+  geom_sf(data = gapminder_sf,
+          aes(fill = lifeExp,
+              colour = "No data"),
+          size = 0.25) +
+  scale_fill_viridis_c(name = "Life expectancy") +
+  scale_colour_manual(values = "white") +
+  theme_void(base_size = 18) +
+  theme() +
+  guides(colour = guide_legend(
+    title = "",
+    override.aes = list(fill = "gray50",
+                        colour = "white")
+  )) 
+ggsave(here("slides", "static-maps-with-ggplot2", "images", "gg_gapminder_viridis.png"),
+       gg_gapminder_viridis,
+       width = 10,
+       height = 5)
+```
+
+<img src='images/gg_gapminder_viridis.png'/>
 ]
+
+
 
 
 
